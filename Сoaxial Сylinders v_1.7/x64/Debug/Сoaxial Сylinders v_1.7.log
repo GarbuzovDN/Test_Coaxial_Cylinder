@@ -1,0 +1,4 @@
+﻿  Procedures.cpp
+D:\Project Visual Studio\Coaxial Сylinders\Сoaxial Сylinders v_1.7\Сoaxial Сylinders v_1.7\Variables.h(149,108): warning C4091: extern : пропускается слева от "Topological_Attribute", когда ни одна переменная не объявлена
+D:\Project Visual Studio\Coaxial Сylinders\Сoaxial Сylinders v_1.7\Сoaxial Сylinders v_1.7\Procedures.cpp(797): warning C4715: Section_value_MUSCL: значение возвращается не при всех путях выполнения
+  Сoaxial Сylinders v_1.7.vcxproj -> D:\Project Visual Studio\Coaxial Сylinders\Сoaxial Сylinders v_1.7\x64\Debug\Сoaxial Сylinders v_1.7.exe
