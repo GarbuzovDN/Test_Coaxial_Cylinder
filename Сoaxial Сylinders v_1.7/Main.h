@@ -127,7 +127,7 @@ int num_el_1, num_el_2, num_el_3;
 int num_el_1_MUSCL;
 
 /* Координаты контрольного элемента */
-double xx_1 = -0.148, yy_1 = -0.142;
+double xx_1 = 0.169, yy_1 = 0.129;
 
 /* Параметр установления */
 double E_U_x, E_U_x_abs;

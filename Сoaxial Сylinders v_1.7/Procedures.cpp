@@ -522,7 +522,7 @@ double Value_bound(double x, double y, int ii, int jj, string param)
 double Firsov_M(int num_i, string param)
 {
 
-    if (num_i == 65)
+    if (num_i == 264 || num_i == 1476)
         num_i = num_i;
     /*string _path = "Documents/Figure/El = " + to_string(max_el);
     ofstream Test_n(_path + "/1. Firsov-M_(El = " + to_string(max_el) + ").DAT", ios_base::trunc);*/
@@ -546,8 +546,10 @@ double Firsov_M(int num_i, string param)
             {
                 int jj_temp = j + 1;
                 if (j + 1 == 3) jj_temp = 0;
-                coord_vertex_David[j][0] = 0.5 * (vectorElement[num_i].Coord_vert[j].x + vectorElement[num_i].Coord_vert[jj_temp].x);
-                coord_vertex_David[j][1] = 0.5 * (vectorElement[num_i].Coord_vert[j].y + vectorElement[num_i].Coord_vert[jj_temp].y);
+                //coord_vertex_David[j][0] = 0.5 * (vectorElement[num_i].Coord_vert[j].x + vectorElement[num_i].Coord_vert[jj_temp].x);
+                //coord_vertex_David[j][1] = 0.5 * (vectorElement[num_i].Coord_vert[j].y + vectorElement[num_i].Coord_vert[jj_temp].y);
+                coord_vertex_David[j][0] = (vectorElement[num_i].Coord_vert[j].x + vectorElement[num_i].Coord_vert[jj_temp].x) - vectorElement[num_i].Coord_center_el.x;
+                coord_vertex_David[j][1] = (vectorElement[num_i].Coord_vert[j].y + vectorElement[num_i].Coord_vert[jj_temp].y) - vectorElement[num_i].Coord_center_el.y;
             }
         }
         else
@@ -636,8 +638,16 @@ double Firsov_M(int num_i, string param)
     {
         if (vectorElement[num_i].Neighb_el[j] == -1)
         {
-            if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = Value_bound(coord_vertex_David[j][0], coord_vertex_David[j][1], num_i, j, "U_x");
-            if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = Value_bound(coord_vertex_David[j][0], coord_vertex_David[j][1], num_i, j, "U_y");
+            //if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = Value_bound(coord_vertex_David[j][0], coord_vertex_David[j][1], num_i, j, "U_x");
+            //if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = Value_bound(coord_vertex_David[j][0], coord_vertex_David[j][1], num_i, j, "U_y");
+            
+            int jj_temp = j + 1;
+            if (j + 1 == 3) jj_temp = 0;
+            double tmp_xx = 0.5 * (vectorElement[num_i].Coord_vert[j].x + vectorElement[num_i].Coord_vert[jj_temp].x);
+            double tmp_yy = 0.5 * (vectorElement[num_i].Coord_vert[j].y + vectorElement[num_i].Coord_vert[jj_temp].y);
+
+            if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_x") - vectorElement[num_i].U_x;
+            if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_y") - vectorElement[num_i].U_y;
             if (param == "P/dx" || param == "P/dy") UU_vert[j] = vectorElement[num_i].P;
         }
         else
@@ -845,8 +855,11 @@ void Calculation_Velocity_U()
             {
                 double temp_sum_ux = 0.0, temp_sum_uy = 0.0;
                 vectorElement[i].A_0 = vectorElement[i].Area_el / dt;
-                double s_p_x = 0.0, s_p_y = 0.0;
-                double Sd_x = 0.0, Sd_y = 0.0;
+                double Sp_x = 0.0, Sp_y = 0.0;
+                double Sd_x = 0.0, Sd_y = 0.0, Sc_x = 0.0, Sc_y = 0.0;
+
+                if (i == 1418)
+                    i = i;
 
                 for (int j = 0; j < 3; j++)
                 {
@@ -861,8 +874,8 @@ void Calculation_Velocity_U()
                     if (vectorElement[i].Neighb_el[j] != -1)
                     {
                         int ii = vectorElement[i].Neighb_el[j];
-                        double U_ik_x = 0.5 * (vectorElement[i].U_x + vectorElement[vectorElement[i].Neighb_el[j]].U_x);
-                        double U_ik_y = 0.5 * (vectorElement[i].U_y + vectorElement[vectorElement[i].Neighb_el[j]].U_y);
+                        double U_ik_x = 0.5 * (vectorElement[i].U_x + vectorElement[ii].U_x);
+                        double U_ik_y = 0.5 * (vectorElement[i].U_y + vectorElement[ii].U_y);
                         /*double U_ik_x = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_x", i) + Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii));
                         double U_ik_y = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_y", i) + Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii));*/
                         double sc_n_U_ik = vectorElement[i].Normal[j][0] * U_ik_x + vectorElement[i].Normal[j][1] * U_ik_y;
@@ -877,7 +890,7 @@ void Calculation_Velocity_U()
                         grad_neidghb = Section_value_MUSCL_Face(x_ik, y_ik, "P", ii);
 
                         double Px, Py, Nx, Ny;
-                        /* Блок нахождения дифю источника */
+                        /* Блок нахождения диф. источника */
                         {
                             double xm = x_ik, ym = y_ik;
                             double xc = vectorElement[ii].Coord_center_el.x, yc = vectorElement[ii].Coord_center_el.y;
@@ -906,6 +919,18 @@ void Calculation_Velocity_U()
                         Sd_x += vectorElement[i].Length_face_el[j] * (scal_i_Ux - scal_0_Ux) / h_c0_ci;
                         Sd_y += vectorElement[i].Length_face_el[j] * (scal_i_Uy - scal_0_Uy) / h_c0_ci;
 
+                        double r_0_x = x_ik - vectorElement[i].Coord_center_el.x; 
+                        double r_0_y = y_ik - vectorElement[i].Coord_center_el.y;
+                        double r_i_x = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].x + vectorElement[ii].Coord_vert[j].x) - vectorElement[ii].Coord_center_el.x;
+                        double r_i_y = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].y + vectorElement[ii].Coord_vert[j].y) - vectorElement[ii].Coord_center_el.y;
+
+                        scal_0_Ux = vectorElement[i].gradU_x[0] * r_0_x + vectorElement[i].gradU_x[1] * r_0_y;
+                        scal_0_Uy = vectorElement[i].gradU_y[0] * r_0_x + vectorElement[i].gradU_y[1] * r_0_y;
+                        scal_i_Ux = vectorElement[ii].gradU_x[0] * r_i_x + vectorElement[ii].gradU_x[1] * r_i_y;
+                        scal_i_Uy = vectorElement[ii].gradU_y[0] * r_i_x + vectorElement[ii].gradU_y[1] * r_i_y;
+
+                        //Sc_x += fmax(flux, 0) * scal_0_Ux - fmax(flux, 0) * scal_i_Ux;
+                        //Sc_y += fmax(flux, 0) * scal_0_Uy - fmax(flux, 0) * scal_i_Uy;
                     }
                     else
                     {
@@ -943,11 +968,11 @@ void Calculation_Velocity_U()
 
                     }
 
-                    s_p_x += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][0] * vectorElement[i].Length_face_el[j];
-                    s_p_y += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][1] * vectorElement[i].Length_face_el[j];
+                    Sp_x += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][0] * vectorElement[i].Length_face_el[j];
+                    Sp_y += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][1] * vectorElement[i].Length_face_el[j];
                 }
-                vectorElement[i].U_x = (temp_sum_ux - s_p_x + vectorElement[i].Area_el / dt * vectorElement[i].u_x + Sd_x) / vectorElement[i].A_0;
-                vectorElement[i].U_y = (temp_sum_uy - s_p_y + vectorElement[i].Area_el / dt * vectorElement[i].u_y + Sd_y) / vectorElement[i].A_0;
+                vectorElement[i].U_x = (temp_sum_ux - Sp_x + vectorElement[i].Area_el / dt * vectorElement[i].u_x + Sd_x - Sc_x) / vectorElement[i].A_0;
+                vectorElement[i].U_y = (temp_sum_uy - Sp_y + vectorElement[i].Area_el / dt * vectorElement[i].u_y + Sd_y - Sc_y) / vectorElement[i].A_0;
             }
         }
     }
@@ -960,23 +985,30 @@ double divU(int ii)
     double x_ik, y_ik, U_x, U_y;
     double temp = 0;
 
-
-    if (ii == 451 || ii == 444)
+    if (ii == 264)
         ii = ii;
 
     for (int j = 0; j <= 2; j++)
         if (vectorElement[ii].Neighb_el[j] != -1)
         {
+            int i_nb = vectorElement[ii].Neighb_el[j];
             int jj_temp = j + 1;
             if (j + 1 == 3) jj_temp = 0;
             x_ik = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].x + vectorElement[ii].Coord_vert[j].x);
             y_ik = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].y + vectorElement[ii].Coord_vert[j].y);
-            U_x = Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii);
-            U_y = Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii);
+
+            /*double r_temp = pow(x_ik * x_ik + y_ik * y_ik, 0.5);
+            double U_an = ((omega_1 * R1 * R1 - omega_0 * R0 * R0) * r_temp + R0 * R0 * R1 * R1 * (omega_0 - omega_1) / r_temp) / (R1 * R1 - R0 * R0);
+
+            U_x = -vectorElement[ii].Coord_center_el.y / r_temp * U_an;
+            U_y = vectorElement[ii].Coord_center_el.x / r_temp * U_an; */
+            
+            U_x = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_x", i_nb));
+            U_y = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_y", i_nb));
+
             temp += (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
 
             //Interpolation Rhie-Chow
-            int i_nb = vectorElement[ii].Neighb_el[j];
             double Df_avr = beta(ii, j) * vectorElement[ii].Area_el / vectorElement[ii].A_0 + (1 - beta(ii, j)) * vectorElement[i_nb].Area_el / vectorElement[i_nb].A_0;
             double nab_p_avr_x = 0.5 * (vectorElement[ii].gradP[0] + vectorElement[i_nb].gradP[0]);
             double nab_p_avr_y = 0.5 * (vectorElement[ii].gradP[1] + vectorElement[i_nb].gradP[1]);
@@ -1039,7 +1071,7 @@ void Calculation_Pressure_P()
         {
             vectorElement[i].P_Correction = 0.0;
             divU_temp[i] = divU(i);
-            test_1 << fixed << setprecision(10) << vectorElement[i].Coord_center_el.x << " \t " << vectorElement[i].Coord_center_el.y << " \t " << abs(divU_temp[i]) << " \t " << endl;
+            test_1 << fixed << setprecision(10) << vectorElement[i].Coord_center_el.x << " \t " << vectorElement[i].Coord_center_el.y << " \t " << divU_temp[i] << " \t " << endl;
         }
     }
 
@@ -1066,7 +1098,7 @@ void Calculation_Pressure_P()
             {
                 double cp = 0.0;
                 double sum = 0.0;
-                if ((i == 263 || i == 444) && Iter_P==230)
+                if (i == 264)
                     i = i;
                 for (int j = 0; j < 3; j++)
                 {
@@ -1315,15 +1347,15 @@ void Write_End()
     {
 
         double x = 0.5;
-        double y = ii * h;
+        double y =0.2+ ii * h;
 
-        Profile_P_MUSCL << fixed << setprecision(9) << ii * h << "\t" << Section_value_MUSCL(x, y, "P") << endl;
-        Profile_U_x_MUSCL << fixed << setprecision(9) << ii * h << "\t" << Section_value_MUSCL(x, y, "U_x") << endl;
-        Profile_U_y_MUSCL << fixed << setprecision(9) << ii * h << "\t" << Section_value_MUSCL(x, y, "U_y") << endl;
+        Profile_P_MUSCL << fixed << setprecision(9) << y << "\t" << Section_value_MUSCL(x, y, "P") << endl;
+        Profile_U_x_MUSCL << fixed << setprecision(9) << y << "\t" << Section_value_MUSCL(x, y, "U_x") << endl;
+        Profile_U_y_MUSCL << fixed << setprecision(9) << y << "\t" << Section_value_MUSCL(x, y, "U_y") << endl;
 
         ii++;
 
-    } while ((ii * h) <= 1.0);
+    } while ((0.2+ii * h) <= 1.0);
 
     Section_value_MUSCL(xx_1, yy_1, "NULL");
 
