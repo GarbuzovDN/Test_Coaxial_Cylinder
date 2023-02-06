@@ -32,7 +32,7 @@ int main()
 
         Time();
 
-    } while (_time <= 1.5);
+    } while (_time <= 2.5);
 
     Write_End();
 }

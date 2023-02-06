@@ -41,6 +41,9 @@ struct Point
     /* Координаты узла */
     double x, y;
 
+    /* КО, которые содержат точку */
+    vector<int> Neighb_el;
+
 };
 struct Element
 {

@@ -97,7 +97,6 @@ void Mesh_Init()
         max_el = max_str;
 
 
-
         /* Заполнение структуры элементов */
         for (int i = 1; i <= max_el; i++)
         {
@@ -335,6 +334,7 @@ void Mesh_Init()
 
         /* Блок нахождения соседних и граничных элементов */
         for (int i = 1; i <= vectorElement.size() - 1; i++)
+        {
             if (vectorElement[i].Geom_el == 2)
                 for (int j = 0; j < 3; j++)
                 {
@@ -382,9 +382,26 @@ void Mesh_Init()
                     //cout << vectorElement[i].Num_el << " \t " << vectorElement[i].Neighb_el[0] << " \t " << vectorElement[i].Neighb_el[1] << " \t " << vectorElement[i].Neighb_el[2] << " \t " << vectorElement[i].Num_bound << endl;
 
                     i = i;
-
                 }
 
+            i = i;
+        }
+
+        /* Блок нахождения элементов, номер вершины которых совпадает */
+        for (int i_p = 0; i_p <= vectorPoint.size() - 1; i_p++)
+        {
+            p1 = vectorPoint[i_p].Num_node;
+            for (int i_el = 1; i_el <= vectorElement.size() - 1; i_el++)
+            {
+                if (vectorElement[i_el].Geom_el == 2)
+                    for (int j = 0; j < 3; j++)
+                        if (p1 == vectorElement[i_el].Num_vert[j])
+                        {
+                            vectorPoint[i_p].Neighb_el.push_back(vectorElement[i_el].Num_el);
+                            i_el = i_el;
+                        }
+            }            
+        }
 
         File_Mesh.close();
 
@@ -982,7 +999,7 @@ double divU(int ii)
 {
 
     /* Дивергенция скорости через нормальную скорость и схему MUSCL */
-    double x_ik, y_ik, U_x, U_y;
+    double x_ik, y_ik, U_x = 0.0, U_y = 0.0;
     double temp = 0;
 
     if (ii == 264)
@@ -1002,7 +1019,41 @@ double divU(int ii)
 
             U_x = -vectorElement[ii].Coord_center_el.y / r_temp * U_an;
             U_y = vectorElement[ii].Coord_center_el.x / r_temp * U_an; */
+
+            int num_vert_el = vectorElement[ii].Num_vert[j];
+            double sum_Area = 0.0;
+
+            for (int i_p = 0; i_p <= vectorPoint[num_vert_el].Neighb_el.size() - 1; ++i_p) {
+
+                int num_point_neighb = vectorPoint[num_vert_el].Neighb_el[i_p];
+                U_x += vectorElement[num_point_neighb].U_x / vectorElement[num_point_neighb].Area_el;
+                U_y += vectorElement[num_point_neighb].U_y / vectorElement[num_point_neighb].Area_el;
+
+                sum_Area += 1 / vectorElement[num_point_neighb].Area_el;
+                i_p = i_p;
+            }
             
+            double U_x_1 = U_x / sum_Area;
+            double U_y_1 = U_y / sum_Area;
+
+            num_vert_el = vectorElement[ii].Num_vert[jj_temp];
+
+            for (int i_p = 0; i_p <= vectorPoint[num_vert_el].Neighb_el.size() - 1; ++i_p) {
+
+                int num_point_neighb = vectorPoint[num_vert_el].Neighb_el[i_p];
+                U_x += vectorElement[num_point_neighb].U_x / vectorElement[num_point_neighb].Area_el;
+                U_y += vectorElement[num_point_neighb].U_y / vectorElement[num_point_neighb].Area_el;
+
+                sum_Area += 1 / vectorElement[num_point_neighb].Area_el;
+                i_p = i_p;
+            }
+
+            double U_x_2 = U_x / sum_Area;
+            double U_y_2 = U_y / sum_Area;
+
+            double U_x_test = 0.5 * (U_x_1 + U_x_2);
+            double U_y_test = 0.5 * (U_y_1 + U_y_2);
+
             U_x = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_x", i_nb));
             U_y = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_y", i_nb));
 
