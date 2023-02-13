@@ -23,6 +23,7 @@ int main()
 
         Redistricting();
         Redistricting1();
+        Test();
         Calculation_Velocity_U();
         Redistricting1();
         Calculation_Pressure_P();
@@ -32,7 +33,7 @@ int main()
 
         Time();
 
-    } while (_time <= 2.5);
+    } while (_time <= 0.0);
 
     Write_End();
 }

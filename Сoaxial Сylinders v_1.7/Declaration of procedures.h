@@ -36,4 +36,6 @@ void Write_End();
 
 void Time();
 
+void Test();
+
 double Firsov_M(int ii, string param);
