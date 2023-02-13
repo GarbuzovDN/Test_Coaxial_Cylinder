@@ -71,6 +71,8 @@ void Mesh_Init()
 
         max_node = max_str;
 
+        vectorPoint.reserve(max_node);
+
         Point node;
 
         /* Заполнение структуры точек */
@@ -96,6 +98,7 @@ void Mesh_Init()
 
         max_el = max_str;
 
+        vectorElement.reserve(max_el);
 
         /* Заполнение структуры элементов */
         for (int i = 1; i <= max_el; i++)
