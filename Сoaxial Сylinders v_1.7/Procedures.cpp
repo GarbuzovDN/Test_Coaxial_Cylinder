@@ -549,7 +549,7 @@ double Value_bound(double x, double y, int ii, int jj, string param)
 double Firsov_M(int num_i, string param)
 {
 
-    if (num_i == 22 || num_i == 42 || num_i == 70)
+    if (num_i == 42)
         num_i = num_i;
     /*string _path = "Documents/Figure/El = " + to_string(max_el);
     ofstream Test_n(_path + "/1. Firsov-M_(El = " + to_string(max_el) + ").DAT", ios_base::trunc);*/
@@ -583,6 +583,12 @@ double Firsov_M(int num_i, string param)
         {
             coord_vertex_David[j][0] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.x;
             coord_vertex_David[j][1] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.y;
+            
+            if (j == 2) {
+
+                coord_vertex_David[j][0] = vectorElement[num_i].Coord_center_el.x;
+                coord_vertex_David[j][1] = vectorElement[num_i].Coord_center_el.y;
+            }
         }
     }
 
@@ -998,8 +1004,8 @@ void Calculation_Velocity_U()
                     Sp_x += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][0] * vectorElement[i].Length_face_el[j];
                     Sp_y += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][1] * vectorElement[i].Length_face_el[j];
                 }
-                //vectorElement[i].U_x = (temp_sum_ux - Sp_x + vectorElement[i].Area_el / dt * vectorElement[i].u_x + Sd_x - Sc_x) / vectorElement[i].A_0;
-                //vectorElement[i].U_y = (temp_sum_uy - Sp_y + vectorElement[i].Area_el / dt * vectorElement[i].u_y + Sd_y - Sc_y) / vectorElement[i].A_0;
+                vectorElement[i].U_x = (temp_sum_ux - Sp_x + vectorElement[i].Area_el / dt * vectorElement[i].u_x + Sd_x - Sc_x) / vectorElement[i].A_0;
+                vectorElement[i].U_y = (temp_sum_uy - Sp_y + vectorElement[i].Area_el / dt * vectorElement[i].u_y + Sd_y - Sc_y) / vectorElement[i].A_0;
             }
         }
     }
