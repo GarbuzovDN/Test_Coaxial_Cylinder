@@ -146,7 +146,7 @@ int maxdivU_num_el = 0;
 
 /* Директория файла с сеткой и Save */
 string File_Mesh_Name =
-"Documents/Mesh/Mesh_Coaxial_Cylinders_(El=92).msh";
+"Documents/Mesh/Mesh_Coaxial_Cylinders_(El=2870).msh";
 ifstream File_Mesh(File_Mesh_Name);
 
 bool Read_From_Save = false;

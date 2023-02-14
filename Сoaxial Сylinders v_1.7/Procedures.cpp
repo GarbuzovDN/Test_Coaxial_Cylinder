@@ -1009,10 +1009,10 @@ double divU(int ii)
 {
 
     /* Дивергенция скорости через нормальную скорость и схему MUSCL */
-    double x_ik, y_ik, U_x = 0.0, U_y = 0.0;
+    double x_ik, y_ik, U_x = 0.0, U_y = 0.0, a, b, c;
     double temp = 0;
 
-    if (ii == 70)
+    if (ii == 22)
         ii = ii;
 
     for (int j = 0; j <= 2; j++)
@@ -1023,66 +1023,30 @@ double divU(int ii)
             if (j + 1 == 3) jj_temp = 0;
             x_ik = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].x + vectorElement[ii].Coord_vert[j].x);
             y_ik = 0.5 * (vectorElement[ii].Coord_vert[jj_temp].y + vectorElement[ii].Coord_vert[j].y);
-
-            /*double r_temp = pow(x_ik * x_ik + y_ik * y_ik, 0.5);
-            double U_an = ((omega_1 * R1 * R1 - omega_0 * R0 * R0) * r_temp + R0 * R0 * R1 * R1 * (omega_0 - omega_1) / r_temp) / (R1 * R1 - R0 * R0);
-
-            U_x = -vectorElement[ii].Coord_center_el.y / r_temp * U_an;
-            U_y = vectorElement[ii].Coord_center_el.x / r_temp * U_an; */
-
-            int num_vert_el = vectorElement[ii].Num_vert[j];
-            double sum_Area = 0.0;
-
-            for (int i_p = 0; i_p <= vectorPoint[num_vert_el].Neighb_el.size() - 1; ++i_p) {
-
-                int num_point_neighb = vectorPoint[num_vert_el].Neighb_el[i_p];
-                
-                double x_ik = vectorPoint[num_vert_el].x; 
-                double y_ik = vectorPoint[num_vert_el].y;
-                U_x += Section_value_MUSCL_Face(x_ik, y_ik, "U_x", num_point_neighb);
-                U_y += Section_value_MUSCL_Face(x_ik, y_ik, "U_y", num_point_neighb);
-                //U_x += vectorElement[num_point_neighb].U_x / vectorElement[num_point_neighb].Area_el;
-                //U_y += vectorElement[num_point_neighb].U_y / vectorElement[num_point_neighb].Area_el;
-
-                //sum_Area += 1 / vectorElement[num_point_neighb].Area_el;
-                i_p = i_p;
-            }
-            
-            double U_x_1 = U_x / vectorPoint[num_vert_el].Neighb_el.size()/* / sum_Area*/;
-            double U_y_1 = U_y / vectorPoint[num_vert_el].Neighb_el.size()/* / sum_Area*/;
-
-            num_vert_el = vectorElement[ii].Num_vert[jj_temp];
-
-            for (int i_p = 0; i_p <= vectorPoint[num_vert_el].Neighb_el.size() - 1; ++i_p) {
-
-                int num_point_neighb = vectorPoint[num_vert_el].Neighb_el[i_p];
-
-                double x_ik = vectorPoint[num_vert_el].x;
-                double y_ik = vectorPoint[num_vert_el].y;
-                U_x += Section_value_MUSCL_Face(x_ik, y_ik, "U_x", num_point_neighb);
-                U_y += Section_value_MUSCL_Face(x_ik, y_ik, "U_y", num_point_neighb);
-
-               /* U_x += vectorElement[num_point_neighb].U_x / vectorElement[num_point_neighb].Area_el;
-                U_y += vectorElement[num_point_neighb].U_y / vectorElement[num_point_neighb].Area_el;
-
-                sum_Area += 1 / vectorElement[num_point_neighb].Area_el;*/
-                i_p = i_p;
-            }
-
-            double U_x_2 = U_x / vectorPoint[num_vert_el].Neighb_el.size()/* / sum_Area*/;
-            double U_y_2 = U_y / vectorPoint[num_vert_el].Neighb_el.size()/* / sum_Area*/;
-
-            double U_x_test = 0.5 * (U_x_1 + U_x_2);
-            double U_y_test = 0.5 * (U_y_1 + U_y_2);
-
-            U_x = U_x_test;
-            U_y = U_y_test;
-
+                       
             U_x = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_x", i_nb));
             U_y = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_y", i_nb));
 
-            double test = (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
-            temp += (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
+            c = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
+
+            double vert_x = vectorElement[ii].Coord_vert[j].x;
+            double vert_y = vectorElement[ii].Coord_vert[j].y;
+
+            U_x = Section_value_MUSCL_Face(vert_x, vert_y, "U_x", ii);
+            U_y = Section_value_MUSCL_Face(vert_x, vert_y, "U_y", ii);
+
+            a = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
+
+            vert_x = vectorElement[ii].Coord_vert[jj_temp].x;
+            vert_y = vectorElement[ii].Coord_vert[jj_temp].y;
+
+            U_x = Section_value_MUSCL_Face(vert_x, vert_y, "U_x", ii);
+            U_y = Section_value_MUSCL_Face(vert_x, vert_y, "U_y", ii);
+
+            b = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
+
+            double test = (a + 4 * c + b) * vectorElement[ii].Length_face_el[j] / 6.0;
+            temp += (a + 4 * c + b) * vectorElement[ii].Length_face_el[j] / 6.0;
 
             //Interpolation Rhie-Chow
             double Df_avr = beta(ii, j) * vectorElement[ii].Area_el / vectorElement[ii].A_0 + (1 - beta(ii, j)) * vectorElement[i_nb].Area_el / vectorElement[i_nb].A_0;
