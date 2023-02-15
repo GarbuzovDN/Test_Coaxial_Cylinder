@@ -584,11 +584,11 @@ double Firsov_M(int num_i, string param)
             coord_vertex_David[j][0] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.x;
             coord_vertex_David[j][1] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.y;
             
-            if (j == 1 && num_i == 42) {
+            /*if (j == 1 && num_i == 42) {
 
                 coord_vertex_David[j][0] = vectorElement[num_i].Coord_center_el.x;
                 coord_vertex_David[j][1] = vectorElement[num_i].Coord_center_el.y;
-            }
+            }*/
         }
     }
 
