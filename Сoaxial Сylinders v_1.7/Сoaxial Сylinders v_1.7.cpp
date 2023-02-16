@@ -18,21 +18,28 @@ int main()
 
     do
     {
-
-        Iter_Glob++;
-
         Redistricting();
-        Redistricting1();
-        Test();
-        Calculation_Velocity_U();
-        Redistricting1();
-        Calculation_Pressure_P();
-        Redistricting1();
+
+        //for (int Iter = 0; Iter <= 100; Iter++)
+        {
+
+            //Test(Iter);
+
+            Iter_Glob++;
+
+            Redistricting1();
+            Calculation_Velocity_U();
+            Redistricting1();
+            Calculation_Pressure_P();
+            Redistricting1();
+
+        }
+
         Development();
         Write();
 
         Time();
-
+        
     } while (_time <= 0.0);
 
     Write_End();

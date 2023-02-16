@@ -549,7 +549,7 @@ double Value_bound(double x, double y, int ii, int jj, string param)
 double Firsov_M(int num_i, string param)
 {
 
-    if (num_i == 40)
+    if (num_i == 75)
         num_i = num_i;
     /*string _path = "Documents/Figure/El = " + to_string(max_el);
     ofstream Test_n(_path + "/1. Firsov-M_(El = " + to_string(max_el) + ").DAT", ios_base::trunc);*/
@@ -1081,15 +1081,19 @@ double divU(int ii)
 
 }
 
-void Test()
+void Test(const int &Iter)
 {
     
-    int el_1 = 70;
+    /*int el_1 = 70;
     double x = vectorElement[el_1].Coord_vert[2].x;
     double y = vectorElement[el_1].Coord_vert[2].y;
     double test_x = Section_value_MUSCL_Face(x, y, "U_x", el_1);
-    double test_y = Section_value_MUSCL_Face(x, y, "U_y", el_1);
+    double test_y = Section_value_MUSCL_Face(x, y, "U_y", el_1);*/
 
+    /*int el_1 = 41;
+    if (Iter == 0)ofstream Profile_U_x(to_string(el_1) + "Profile_U_x(Iter)_(El = " + to_string(max_el) + ").DAT");
+    ofstream Profile_U_x(to_string(el_1) + "Profile_U_x(Iter)_(El = " + to_string(max_el) + ").DAT", ios_base::app);
+    Profile_U_x << fixed << setprecision(9) << Iter << "\t" << vectorElement[el_1].U_x << "\t" << vectorElement[el_1].P << endl;*/
 }
 
 void Calculation_Pressure_P()
