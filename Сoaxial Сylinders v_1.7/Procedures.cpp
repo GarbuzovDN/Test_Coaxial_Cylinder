@@ -676,7 +676,22 @@ double Firsov_M(int num_i, string param)
 
             if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_x") - vectorElement[num_i].U_x;
             if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_y") - vectorElement[num_i].U_y;
-            if (param == "P/dx" || param == "P/dy") UU_vert[j] = vectorElement[num_i].P;
+            if (param == "P/dx" || param == "P/dy") {
+                if (vectorElement[num_i].Num_bound == 2) {
+                    
+                    double rr = sqrt(tmp_xx * tmp_xx + tmp_yy * tmp_yy);
+                    double dP = 1.0 / 0.96 / 0.96 * (rr - 0.08 / rr + 0.04 * 0.04 / rr / rr / rr);
+                    UU_vert[j] = vectorElement[num_i].P - vectorElement[num_i].h[j] * dP;
+                    double debug = 0.0;
+                }
+                else { 
+                    
+                    double rr = sqrt(tmp_xx * tmp_xx + tmp_yy * tmp_yy);
+                    double dP = 1.0 / 0.96 / 0.96 * (rr - 0.08 / rr + 0.04 * 0.04 / rr / rr / rr);
+                    UU_vert[j] = vectorElement[num_i].P + vectorElement[num_i].h[j] * dP;
+                    double debug = 0.0;;
+                }
+            }
         }
         else
         {
