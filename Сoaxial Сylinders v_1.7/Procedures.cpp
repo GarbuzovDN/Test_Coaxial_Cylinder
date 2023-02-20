@@ -549,8 +549,6 @@ double Value_bound(double x, double y, int ii, int jj, string param)
 double Firsov_M(int num_i, string param)
 {
 
-    if (num_i == 75)
-        num_i = num_i;
     /*string _path = "Documents/Figure/El = " + to_string(max_el);
     ofstream Test_n(_path + "/1. Firsov-M_(El = " + to_string(max_el) + ").DAT", ios_base::trunc);*/
 
@@ -661,9 +659,6 @@ double Firsov_M(int num_i, string param)
     double p = 0.5 * (a + b + c);
     double S_N = sqrt(p * (p - a) * (p - b) * (p - c));
 
-    if (num_i == 65)
-        num_i = num_i;
-
     double test = 0.0;
 
     double UU_vert[3];
@@ -700,9 +695,6 @@ double Firsov_M(int num_i, string param)
         if (param == "U_x/dy" || param == "U_y/dy" || param == "P/dy") test += normal_to_face[j][1] * 0.5 * (UU_vert[j] + UU_vert[jj_temp]) * len_face_David[j];
     }
     test /= S_N;
-
-    if (num_i == 70)
-        num_i = num_i;
 
     return test;
 }
@@ -1018,9 +1010,6 @@ double divU(int ii)
     double x_ik, y_ik, U_x = 0.0, U_y = 0.0, a, b, c;
     double temp = 0;
 
-    if (ii == 22)
-        ii = ii;
-
     for (int j = 0; j <= 2; j++)
         if (vectorElement[ii].Neighb_el[j] != -1)
         {
@@ -1033,26 +1022,8 @@ double divU(int ii)
             U_x = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_x", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_x", i_nb));
             U_y = 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "U_y", ii) + Section_value_MUSCL_Face(x_ik, y_ik, "U_y", i_nb));
 
-            c = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
-
-            double vert_x = vectorElement[ii].Coord_vert[j].x;
-            double vert_y = vectorElement[ii].Coord_vert[j].y;
-
-            U_x = Section_value_MUSCL_Face(vert_x, vert_y, "U_x", ii);
-            U_y = Section_value_MUSCL_Face(vert_x, vert_y, "U_y", ii);
-
-            a = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
-
-            vert_x = vectorElement[ii].Coord_vert[jj_temp].x;
-            vert_y = vectorElement[ii].Coord_vert[jj_temp].y;
-
-            U_x = Section_value_MUSCL_Face(vert_x, vert_y, "U_x", ii);
-            U_y = Section_value_MUSCL_Face(vert_x, vert_y, "U_y", ii);
-
-            b = vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y;
-
-            double test = (a + 4 * c + b) * vectorElement[ii].Length_face_el[j] / 6.0;
-            temp += (a + 4 * c + b) * vectorElement[ii].Length_face_el[j] / 6.0;
+            double test = (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
+            temp += (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
 
             //Interpolation Rhie-Chow
             double Df_avr = beta(ii, j) * vectorElement[ii].Area_el / vectorElement[ii].A_0 + (1 - beta(ii, j)) * vectorElement[i_nb].Area_el / vectorElement[i_nb].A_0;
@@ -1074,11 +1045,7 @@ double divU(int ii)
             temp += (vectorElement[ii].Normal[j][0] * U_x_bound + vectorElement[ii].Normal[j][1] * U_y_bound) * vectorElement[ii].Length_face_el[j];
         }
 
-    if (ii == 42)
-        ii = ii;
-
     return temp;
-
 }
 
 void Test(const int &Iter)
