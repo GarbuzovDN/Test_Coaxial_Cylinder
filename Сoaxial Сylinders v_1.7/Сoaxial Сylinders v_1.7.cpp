@@ -40,7 +40,7 @@ int main()
 
         Time();
         
-    } while (_time <= 0.5);
+    } while (_time <= 0.02);
 
     Write_End();
 }

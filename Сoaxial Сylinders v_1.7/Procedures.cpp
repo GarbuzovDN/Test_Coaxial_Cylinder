@@ -676,22 +676,7 @@ double Firsov_M(int num_i, string param)
 
             if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_x") - vectorElement[num_i].U_x;
             if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_y") - vectorElement[num_i].U_y;
-            if (param == "P/dx" || param == "P/dy") {
-                if (vectorElement[num_i].Num_bound == 2) {
-                    
-                    double rr = sqrt(tmp_xx * tmp_xx + tmp_yy * tmp_yy);
-                    double dP = 1.0 / 0.96 / 0.96 * (rr - 0.08 / rr + 0.04 * 0.04 / rr / rr / rr);
-                    UU_vert[j] = vectorElement[num_i].P - vectorElement[num_i].h[j] * dP;
-                    double debug = 0.0;
-                }
-                else { 
-                    
-                    double rr = sqrt(tmp_xx * tmp_xx + tmp_yy * tmp_yy);
-                    double dP = 1.0 / 0.96 / 0.96 * (rr - 0.08 / rr + 0.04 * 0.04 / rr / rr / rr);
-                    UU_vert[j] = vectorElement[num_i].P + vectorElement[num_i].h[j] * dP;
-                    double debug = 0.0;;
-                }
-            }
+            if (param == "P/dx" || param == "P/dy") UU_vert[j] = vectorElement[num_i].P;
         }
         else
         {
@@ -737,8 +722,13 @@ void Redistricting1()
             vectorElement[i].gradU_x[1] = Firsov_M(i, "U_x/dy");
             vectorElement[i].gradU_y[0] = Firsov_M(i, "U_y/dx");
             vectorElement[i].gradU_y[1] = Firsov_M(i, "U_y/dy");
-            vectorElement[i].gradP[0] = Firsov_M(i, "P/dx");
-            vectorElement[i].gradP[1] = Firsov_M(i, "P/dy");
+
+            double x = vectorElement[i].Coord_center_el.x;
+            double y = vectorElement[i].Coord_center_el.y;
+            double P_dx = 1.0 / 0.96 / 0.96 * (x - 0.08 * x / (x * x + y * y) - 0.5 * 0.04 * 0.04 * 2 * x / pow(x * x + y * y, 2));
+            double P_dy = 1.0 / 0.96 / 0.96 * (y - 0.08 * y / (x * x + y * y) - 0.5 * 0.04 * 0.04 * 2 * y / pow(x * x + y * y, 2));
+            vectorElement[i].gradP[0] = P_dx;
+            vectorElement[i].gradP[1] = P_dy;
         }
     }
 
@@ -866,18 +856,41 @@ double Section_value_MUSCL_Face(double xx, double yy, string param, int num_i)
             t1 = vectorElement[num_i].gradU_x[0];
             t2 = vectorElement[num_i].gradU_x[1];
             Param = vectorElement[num_i].U_x;
+
+            /*if (vectorElement[num_i].Num_bound == 2 || vectorElement[num_i].Num_bound == 1) 
+            {
+
+                Param = -1.0 / 0.96 * (yy - 0.04 * yy / (xx * xx + yy * yy));
+                return Param;
+            }*/
         }
         if (param == "U_y")
         {
             t1 = vectorElement[num_i].gradU_y[0];
             t2 = vectorElement[num_i].gradU_y[1];
             Param = vectorElement[num_i].U_y;
+
+            /*if (vectorElement[num_i].Num_bound == 2 || vectorElement[num_i].Num_bound == 1) 
+            {
+
+                Param = 1.0 / 0.96 * (xx - 0.04 * xx / (xx * xx + yy * yy));
+                return Param;
+            }*/
         }
         if (param == "P")
         {
             t1 = vectorElement[num_i].gradP[0];
             t2 = vectorElement[num_i].gradP[1];
             Param = vectorElement[num_i].P;
+
+            if (vectorElement[num_i].Num_bound == 2 || vectorElement[num_i].Num_bound == 1) 
+            {
+                double rr = sqrt(xx * xx + yy * yy);
+                t1 = 1.0 / 0.96 / 0.96 * (xx - 0.08 * xx /rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * xx / pow(rr,4));
+                t2 = 1.0 / 0.96 / 0.96 * (yy - 0.08 * yy / rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * yy / pow(rr, 4));
+                Param = vectorElement[num_i].P;
+                //return Param;
+            }
         }
 
         return  Param + (x_x_i * t1 + y_y_i * t2);
@@ -982,7 +995,7 @@ void Calculation_Velocity_U()
                         grad_neidghb = Section_value_MUSCL_Face(x_ik, y_ik, "P", i);
 
                         double Nx, Ny;
-                        /* Блок нахождения дифю источника */
+                        /* Блок нахождения диф. источника */
                         {
                             double xm = x_ik, ym = y_ik;
                             double xc = vectorElement[i].Coord_center_el.x, yc = vectorElement[i].Coord_center_el.y;
@@ -1007,6 +1020,10 @@ void Calculation_Velocity_U()
                         Sd_y += vectorElement[i].Length_face_el[j] * (-scal_0_Uy) / h_c0_ci;
 
                     }
+
+                    double test_1 = Section_value_MUSCL_Face(x_ik, y_ik, "P", i);
+                    double test_2 = vectorElement[i].Normal[j][0] * vectorElement[i].Length_face_el[j];
+                    double test_4 = vectorElement[i].Normal[j][1] * vectorElement[i].Length_face_el[j];
 
                     Sp_x += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][0] * vectorElement[i].Length_face_el[j];
                     Sp_y += 0.5 * (Section_value_MUSCL_Face(x_ik, y_ik, "P", i) + grad_neidghb) * vectorElement[i].Normal[j][1] * vectorElement[i].Length_face_el[j];
@@ -1046,7 +1063,7 @@ double divU(int ii)
             double nab_p_avr_y = 0.5 * (vectorElement[ii].gradP[1] + vectorElement[i_nb].gradP[1]);
             double sl1 = (nab_p_avr_x * vectorElement[ii].Normal[j][0] + nab_p_avr_y * vectorElement[ii].Normal[j][1]) * vectorElement[ii].Length_face_el[j];
             double sl2 = (vectorElement[i_nb].P - vectorElement[ii].P) / (vectorElement[i_nb].h[j] + vectorElement[ii].h[j]) * vectorElement[ii].Length_face_el[j];
-            temp -= Df_avr * (sl2 - sl1);
+            temp += Df_avr * (sl2 - sl1);
         }
         else
         {
