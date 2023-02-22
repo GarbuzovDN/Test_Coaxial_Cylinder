@@ -723,12 +723,12 @@ void Redistricting1()
             vectorElement[i].gradU_y[0] = Firsov_M(i, "U_y/dx");
             vectorElement[i].gradU_y[1] = Firsov_M(i, "U_y/dy");
 
-            double x = vectorElement[i].Coord_center_el.x;
+            /*double x = vectorElement[i].Coord_center_el.x;
             double y = vectorElement[i].Coord_center_el.y;
             double P_dx = 1.0 / 0.96 / 0.96 * (x - 0.08 * x / (x * x + y * y) - 0.5 * 0.04 * 0.04 * 2 * x / pow(x * x + y * y, 2));
-            double P_dy = 1.0 / 0.96 / 0.96 * (y - 0.08 * y / (x * x + y * y) - 0.5 * 0.04 * 0.04 * 2 * y / pow(x * x + y * y, 2));
-            vectorElement[i].gradP[0] = P_dx;
-            vectorElement[i].gradP[1] = P_dy;
+            double P_dy = 1.0 / 0.96 / 0.96 * (y - 0.08 * y / (x * x + y * y) - 0.5 * 0.04 * 0.04 * 2 * y / pow(x * x + y * y, 2));*/
+            vectorElement[i].gradP[0] = Firsov_M(i, "P/dx");
+            vectorElement[i].gradP[1] = Firsov_M(i, "P/dy");
         }
     }
 
@@ -1058,12 +1058,13 @@ double divU(int ii)
             temp += (vectorElement[ii].Normal[j][0] * U_x + vectorElement[ii].Normal[j][1] * U_y) * vectorElement[ii].Length_face_el[j];
 
             //Interpolation Rhie-Chow
-            double Df_avr = beta(ii, j) * vectorElement[ii].Area_el / vectorElement[ii].A_0 + (1 - beta(ii, j)) * vectorElement[i_nb].Area_el / vectorElement[i_nb].A_0;
-            double nab_p_avr_x = 0.5 * (vectorElement[ii].gradP[0] + vectorElement[i_nb].gradP[0]);
-            double nab_p_avr_y = 0.5 * (vectorElement[ii].gradP[1] + vectorElement[i_nb].gradP[1]);
+            double beta_temp = beta(ii, j);
+            double Df_avr = beta_temp * vectorElement[ii].Area_el / vectorElement[ii].A_0 + (1 - beta_temp) * vectorElement[i_nb].Area_el / vectorElement[i_nb].A_0;
+            double nab_p_avr_x = beta_temp * vectorElement[ii].gradP[0] + (1 - beta_temp) * vectorElement[i_nb].gradP[0];
+            double nab_p_avr_y = beta_temp * vectorElement[ii].gradP[1] + (1 - beta_temp) * vectorElement[i_nb].gradP[1];
             double sl1 = (nab_p_avr_x * vectorElement[ii].Normal[j][0] + nab_p_avr_y * vectorElement[ii].Normal[j][1]) * vectorElement[ii].Length_face_el[j];
             double sl2 = (vectorElement[i_nb].P - vectorElement[ii].P) / (vectorElement[i_nb].h[j] + vectorElement[ii].h[j]) * vectorElement[ii].Length_face_el[j];
-            temp += Df_avr * (sl2 - sl1);
+            temp -= Df_avr * (sl2 - sl1);
         }
         else
         {
