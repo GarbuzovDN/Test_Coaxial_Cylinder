@@ -562,7 +562,7 @@ double Firsov_M(int num_i, string param)
     {
         if (vectorElement[num_i].Neighb_el[j] == -1)
         {
-            if (param == "P/dx" || param == "P/dy")
+            if (param == "P/dx" || param == "P/dy" || param == "P'/dx" || param == "P'/dy")
             {
                 coord_vertex_David[j][0] = vectorElement[num_i].Coord_center_el.x;
                 coord_vertex_David[j][1] = vectorElement[num_i].Coord_center_el.y;
@@ -581,12 +581,6 @@ double Firsov_M(int num_i, string param)
         {
             coord_vertex_David[j][0] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.x;
             coord_vertex_David[j][1] = vectorElement[vectorElement[num_i].Neighb_el[j]].Coord_center_el.y;
-            
-            /*if (j == 1 && num_i == 42) {
-
-                coord_vertex_David[j][0] = vectorElement[num_i].Coord_center_el.x;
-                coord_vertex_David[j][1] = vectorElement[num_i].Coord_center_el.y;
-            }*/
         }
     }
 
@@ -676,12 +670,14 @@ double Firsov_M(int num_i, string param)
             if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_x") - vectorElement[num_i].U_x;
             if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = 2.0 * Value_bound(tmp_xx, tmp_yy, num_i, j, "U_y") - vectorElement[num_i].U_y;
             if (param == "P/dx" || param == "P/dy") UU_vert[j] = vectorElement[num_i].P;
+            if (param == "P'/dx" || param == "P'/dy") UU_vert[j] = vectorElement[num_i].P_Correction;
         }
         else
         {
             if (param == "U_x/dx" || param == "U_x/dy") UU_vert[j] = vectorElement[vectorElement[num_i].Neighb_el[j]].U_x;
             if (param == "U_y/dx" || param == "U_y/dy") UU_vert[j] = vectorElement[vectorElement[num_i].Neighb_el[j]].U_y;
             if (param == "P/dx" || param == "P/dy") UU_vert[j] = vectorElement[vectorElement[num_i].Neighb_el[j]].P;
+            if (param == "P'/dx" || param == "P'/dy") UU_vert[j] = vectorElement[vectorElement[num_i].Neighb_el[j]].P_Correction;
         }
 
     }
@@ -690,8 +686,8 @@ double Firsov_M(int num_i, string param)
     {
         int jj_temp = j + 1;
         if (j + 1 == 3) jj_temp = 0;
-        if (param == "U_x/dx" || param == "U_y/dx" || param == "P/dx") test += normal_to_face[j][0] * 0.5 * (UU_vert[j] + UU_vert[jj_temp]) * len_face_David[j];
-        if (param == "U_x/dy" || param == "U_y/dy" || param == "P/dy") test += normal_to_face[j][1] * 0.5 * (UU_vert[j] + UU_vert[jj_temp]) * len_face_David[j];
+        if (param == "U_x/dx" || param == "U_y/dx" || param == "P/dx" || param == "P'/dx") test += normal_to_face[j][0] * 0.5 * (UU_vert[j] + UU_vert[jj_temp]) * len_face_David[j];
+        if (param == "U_x/dy" || param == "U_y/dy" || param == "P/dy" || param == "P'/dy") test += normal_to_face[j][1] * 0.5 * (UU_vert[j] + UU_vert[jj_temp]) * len_face_David[j];
     }
     test /= S_N;
 
