@@ -631,7 +631,6 @@ double Firsov_M(int num_i, string param)
             system("pause");
 
         }
-
     }
 
     /*double coord_2_1_x = N_el_neighb_x + (0.5 * (vectorElement[vectorElement[num_i].Neighb_el[1]].Coord_center_el.x - N_el_neighb_x));
