@@ -883,14 +883,14 @@ double Section_value_MUSCL_Face(double xx, double yy, string param, int num_i)
             t2 = vectorElement[num_i].gradP[1];
             Param = vectorElement[num_i].P;
 
-            if (vectorElement[num_i].Num_bound == 2 || vectorElement[num_i].Num_bound == 1) 
-            {
-                double rr = sqrt(xx * xx + yy * yy);
-                t1 = 1.0 / 0.96 / 0.96 * (xx - 0.08 * xx /rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * xx / pow(rr,4));
-                t2 = 1.0 / 0.96 / 0.96 * (yy - 0.08 * yy / rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * yy / pow(rr, 4));
-                Param = vectorElement[num_i].P;
-                //return Param;
-            }
+            //if (vectorElement[num_i].Num_bound == 2 || vectorElement[num_i].Num_bound == 1) 
+            //{
+            //    double rr = sqrt(xx * xx + yy * yy);
+            //    t1 = 1.0 / 0.96 / 0.96 * (xx - 0.08 * xx /rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * xx / pow(rr,4));
+            //    t2 = 1.0 / 0.96 / 0.96 * (yy - 0.08 * yy / rr / rr - 0.5 * 0.04 * 0.04 * 2.0 * yy / pow(rr, 4));
+            //    Param = vectorElement[num_i].P;
+            //    //return Param;
+            //}
         }
 
         return  Param + (x_x_i * t1 + y_y_i * t2);
@@ -942,12 +942,12 @@ void Calculation_Velocity_U()
 
                         grad_neidghb = Section_value_MUSCL_Face(x_ik, y_ik, "P", ii);
 
-                        double Px, Py, Nx, Ny;
+                        double Px, Py, Nx, Ny, xc, yc, nx, ny, xm, ym;
                         /* Блок нахождения диф. источника */
                         {
-                            double xm = x_ik, ym = y_ik;
-                            double xc = vectorElement[ii].Coord_center_el.x, yc = vectorElement[ii].Coord_center_el.y;
-                            double nx = vectorElement[i].Normal[j][0], ny = vectorElement[i].Normal[j][1];
+                            xm = x_ik, ym = y_ik;
+                            xc = vectorElement[ii].Coord_center_el.x, yc = vectorElement[ii].Coord_center_el.y;
+                            nx = vectorElement[i].Normal[j][0], ny = vectorElement[i].Normal[j][1];
 
                             Py = ym * nx * nx + ny * (xc * nx + yc * ny - xm * nx);
                             Px = (Py - ym) * nx / ny + xm;
@@ -1063,8 +1063,29 @@ double divU(int ii)
             double nab_p_avr_x = beta_temp * vectorElement[ii].gradP[0] + (1 - beta_temp) * vectorElement[i_nb].gradP[0];
             double nab_p_avr_y = beta_temp * vectorElement[ii].gradP[1] + (1 - beta_temp) * vectorElement[i_nb].gradP[1];
             double sl1 = (nab_p_avr_x * vectorElement[ii].Normal[j][0] + nab_p_avr_y * vectorElement[ii].Normal[j][1]) * vectorElement[ii].Length_face_el[j];
-            double sl2 = (vectorElement[i_nb].P - vectorElement[ii].P) / (vectorElement[i_nb].h[j] + vectorElement[ii].h[j]) * vectorElement[ii].Length_face_el[j];
-            temp -= Df_avr * (sl2 - sl1);
+            
+            double Px, Py, Nx, Ny, xc, yc, nx, ny, xm, ym;
+            /* Блок нахождения точек N и P */
+            {
+                xm = x_ik, ym = y_ik;
+                xc = vectorElement[i_nb].Coord_center_el.x, yc = vectorElement[i_nb].Coord_center_el.y;
+                nx = vectorElement[ii].Normal[j][0], ny = vectorElement[ii].Normal[j][1];
+
+                Py = ym * nx * nx + ny * (xc * nx + yc * ny - xm * nx);
+                Px = (Py - ym) * nx / ny + xm;
+
+                xc = vectorElement[ii].Coord_center_el.x, yc = vectorElement[ii].Coord_center_el.y;
+
+                Ny = ym * nx * nx + ny * (xc * nx + yc * ny - xm * nx);
+                Nx = (Ny - ym) * nx / ny + xm;
+
+            }
+
+            double P_0 = Section_value_MUSCL(Nx, Ny, "P");
+            double P_i = Section_value_MUSCL(Px, Py, "P");
+            double sl2 = (P_i - P_0) / (vectorElement[i_nb].h[j] + vectorElement[ii].h[j]) * vectorElement[ii].Length_face_el[j];
+            temp += Df_avr * (sl2 - sl1);
+            double debug = 0.0;
         }
         else
         {
